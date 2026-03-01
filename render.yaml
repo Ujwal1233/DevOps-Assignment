@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: backend-app
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerCommand: node server.js
+    port: 8080
+    envVars:
+      - key: NODE_ENV
+        value: production

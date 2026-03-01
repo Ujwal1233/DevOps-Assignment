@@ -1,138 +1,241 @@
-# DevOps Assignment
+# DevOps Assignment - Cloud Infrastructure Setup
 
-This project consists of a FastAPI backend and a Next.js frontend that communicates with the backend.
+This repository contains all the necessary files to complete the DevOps assignment using AWS and GCP.
 
-## Project Structure
+## 📐 Architecture Overview
 
 ```
-.
-├── backend/               # FastAPI backend
-│   ├── app/
-│   │   └── main.py       # Main FastAPI application
-│   └── requirements.txt    # Python dependencies
-└── frontend/              # Next.js frontend
-    ├── pages/
-    │   └── index.js     # Main page
-    ├── public/            # Static files
-    └── package.json       # Node.js dependencies
+┌─────────────────────────────────────────────────────────────┐
+│                        AWS (ap-south-1)                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │     DEV     │  │   STAGING   │  │    PROD     │        │
+│  │  t2.micro   │  │  t2.small   │  │ t3.medium   │        │
+│  │             │  │             │  │             │        │
+│  │  EC2 + VPC  │  │  EC2 + VPC  │  │  EC2 + VPC  │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+│                                                              │
+│  ┌─────────────────────────────────────────────┐           │
+│  │         Terraform State Storage              │           │
+│  │  ┌─────────┐        ┌────────────────┐     │           │
+│  │  │   S3    │        │   DynamoDB     │     │           │
+│  │  │ Bucket  │        │ Lock Table      │     │           │
+│  │  └─────────┘        └────────────────┘     │           │
+│  └─────────────────────────────────────────────┘           │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                      GCP (asia-south1)                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────────────────────────┐           │
+│  │            Cloud Run Service                 │           │
+│  │         (Auto-scaling Container)            │           │
+│  └─────────────────────────────────────────────┘           │
+│                                                              │
+│  ┌─────────────────────────────────────────────┐           │
+│  │         Container Registry (GCR)            │           │
+│  └─────────────────────────────────────────────┘           │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Prerequisites
+## ☁️ Hosted URLs
 
-- Python 3.8+
-- Node.js 16+
-- npm or yarn
+| Environment | Service | URL | Status |
+|-------------|---------|-----|--------|
+| Dev | AWS EC2 | http://3.108.194.64:3000 | ✅ Running |
+| Staging | AWS EC2 | http://13.127.193.211:3000 | ✅ Running |
+| Prod | AWS EC2 | http://15.206.80.55:3000 | ✅ Running |
+| Render.com | Docker | Sign up at render.com | ✅ Ready to deploy |
 
-## Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Create a virtual environment (recommended):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Run the FastAPI server:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-   The backend will be available at `http://localhost:8000`
-
-## Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
-
-3. Configure the backend URL (if different from default):
-   - Open `.env.local`
-   - Update `NEXT_PUBLIC_API_URL` with your backend URL
-   - Example: `NEXT_PUBLIC_API_URL=https://your-backend-url.com`
-
-4. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-   The frontend will be available at `http://localhost:3000`
-
-## Changing the Backend URL
-
-To change the backend URL that the frontend connects to:
-
-1. Open the `.env.local` file in the frontend directory
-2. Update the `NEXT_PUBLIC_API_URL` variable with your new backend URL
-3. Save the file
-4. Restart the Next.js development server for changes to take effect
-
-Example:
+**Health Check Endpoint:**
 ```
-NEXT_PUBLIC_API_URL=https://your-new-backend-url.com
+GET http://<public-ip>:3000/api/health
+Response: {"status":"healthy","message":"Backend is running successfully"}
 ```
 
-## For deployment:
-   ```bash
-   npm run build
-   # or
-   yarn build
-   ```
+## 📁 Project Structure
 
-   AND
+```
+Devops/
+├── terraform/
+│   ├── provider.tf                    # Terraform provider configuration
+│   └── environments/
+│       ├── dev/                       # Development environment
+│       │   ├── main.tf
+│       │   ├── variables.tf
+│       │   ├── terraform.tfvars
+│       │   ├── backend.tf
+│       │   └── outputs.tf
+│       ├── staging/                   # Staging environment
+│       │   ├── main.tf
+│       │   ├── variables.tf
+│       │   ├── terraform.tfvars
+│       │   ├── backend.tf
+│       │   └── outputs.tf
+│       └── prod/                      # Production environment
+│           ├── main.tf
+│           ├── variables.tf
+│           ├── terraform.tfvars
+│           ├── backend.tf
+│           └── outputs.tf
+├── scripts/
+│   ├── check-tools.ps1               # Check/install required tools
+│   ├── aws-setup.ps1                 # AWS infrastructure setup
+│   ├── deploy-tf.ps1                 # Deploy Terraform environments
+│   └── gcp-deploy.ps1                # GCP Cloud Run deployment
+├── docs/
+│   ├── DOCUMENTATION.md              # Cloud infrastructure documentation
+│   └── DEMO-SCRIPT.md               # Demo video script
+├── TODO.md                           # Task tracking
+└── README.md                         # This file
+```
 
-   ```bash
-   npm run start
-   # or
-   yarn start
-   ```
+## 🚀 How to Deploy
 
-   The frontend will be available at `http://localhost:3000`
+### Prerequisites
 
-## Testing the Integration
+1. **Install Required Tools:**
+   
+```
+powershell
+   .\scripts\check-tools.ps1
+   
+```
 
-1. Ensure both backend and frontend servers are running
-2. Open the frontend in your browser (default: http://localhost:3000)
-3. If everything is working correctly, you should see:
-   - A status message indicating the backend is connected
-   - The message from the backend: "You've successfully integrated the backend!"
-   - The current backend URL being used
+   Or manually install:
+   - [Terraform](https://www.terraform.io/downloads)
+   - [AWS CLI](https://aws.amazon.com/cli/)
+   - [Docker Desktop](https://www.docker.com/products/docker-desktop)
+   - [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
 
-## API Endpoints
+### AWS Deployment Steps
 
-- `GET /api/health`: Health check endpoint
-  - Returns: `{"status": "healthy", "message": "Backend is running successfully"}`
+1. **Configure AWS:**
+   
+```
+bash
+   aws configure
+   
+```
+   - Enter Access Key
+   - Enter Secret Key
+   - Region: ap-south-1
+   - Output format: Press Enter
 
-- `GET /api/message`: Get the integration message
-  - Returns: `{"message": "You've successfully integrated the backend!"}`
- 
+2. **Setup AWS Infrastructure:**
+   
+```
+powershell
+   .\scripts\aws-setup.ps1 -BucketName "your-unique-bucket-name"
+   
+```
 
+3. **Update backend.tf:**
+   - Replace `YOUR_UNIQUE_BUCKET_NAME` in all `backend.tf` files with your actual S3 bucket name
 
-## ## Live Endpoints
+4. **Deploy Environments:**
+   
+```
+powershell
+   # Deploy DEV
+   .\scripts\deploy-tf.ps1 -Environment dev
 
-DEV:
-http://3.xxx.xxx.xxx:3000/api/health
+   # Deploy Staging
+   .\scripts\deploy-tf.ps1 -Environment staging
 
-STAGING:
-http://13.xxx.xxx.xxx:3000/api/health
+   # Deploy Prod
+   .\scripts\deploy-tf.ps1 -Environment prod
+   
+```
 
-PROD:
-http://15.xxx.xxx.xxx:3000/api/health
+### GCP Deployment Steps
+
+1. **Configure GCP:**
+   
+```
+bash
+   gcloud auth login
+   gcloud config set project YOUR_PROJECT_ID
+   
+```
+
+2. **Deploy to Cloud Run:**
+   
+```
+powershell
+   .\scripts\gcp-deploy.ps1 -ProjectID "your-gcp-project-id"
+   
+```
+
+## 📋 Instance Types by Environment
+
+| Environment | Instance Type | vCPU | RAM |
+|-------------|---------------|------|-----|
+| Dev | t2.micro | 1 | 1 GB |
+| Staging | t2.small | 1 | 2 GB |
+| Prod | t3.medium | 2 | 4 GB |
+
+## 🔧 Important Notes
+
+1. **State Management**: Terraform state is stored in S3 with DynamoDB locking
+2. **Backend Configuration**: Update `backend.tf` files with your actual S3 bucket name
+3. **AWS Region**: ap-south-1 (Mumbai)
+4. **GCP Region**: asia-south1 (Mumbai)
+5. **Health Check**: Backend should respond at `/api/health` endpoint
+
+## 📄 Documentation Links
+
+- **Cloud Infrastructure Documentation**: [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)
+- **Demo Video Script**: [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md)
+
+## 🎬 Demo Video
+
+See `docs/DEMO-SCRIPT.md` for a structured demo video script (8-12 minutes).
+
+**Demo Video Structure:**
+1. Intro (1 min)
+2. Architecture explanation (2 min)
+3. AWS deployment walkthrough (3 min)
+4. GCP deployment walkthrough (2 min)
+5. Terraform state explanation (1 min)
+6. Failure thinking (1 min)
+7. Future growth (1 min)
+8. What not implemented (1 min)
+
+## 🔐 Security Considerations
+
+- IAM User has AdministratorAccess (for learning purposes)
+- Security groups allow HTTP (80), HTTPS (443), and SSH (22)
+- In production, restrict SSH access and use least-privilege IAM
+
+## 🧹 Cleanup
+
+To destroy resources (use with caution!):
+
+```
+powershell
+# Navigate to environment directory
+cd terraform\environments\dev
+terraform destroy
+```
+
+## 📝 Key Features Implemented
+
+✅ AWS EC2 instances (dev, staging, prod)
+✅ VPC networking with public subnets
+✅ Security groups with proper rules
+✅ Terraform remote state storage (S3)
+✅ State versioning for corruption protection
+✅ DynamoDB lock table for concurrent operations
+✅ Environment isolation (separate state per env)
+✅ GCP Cloud Run deployment
+✅ Docker container deployment
+✅ Comprehensive documentation
+
+---
+
+**Created for DevOps Assignment**
+
+*This project demonstrates cloud infrastructure setup using Terraform, AWS EC2, and GCP Cloud Run with proper state management and documentation.*
