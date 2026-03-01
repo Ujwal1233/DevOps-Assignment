@@ -123,3 +123,16 @@ NEXT_PUBLIC_API_URL=https://your-new-backend-url.com
 
 - `GET /api/message`: Get the integration message
   - Returns: `{"message": "You've successfully integrated the backend!"}`
+ 
+
+
+## ## Live Endpoints
+
+DEV:
+http://3.xxx.xxx.xxx:3000/api/health
+
+STAGING:
+http://13.xxx.xxx.xxx:3000/api/health
+
+PROD:
+http://15.xxx.xxx.xxx:3000/api/health
